@@ -1,5 +1,4 @@
 from notion_client import Client
-import sys
 from config import (
     NOTION_SECRET,
     DATABASE_ID,
