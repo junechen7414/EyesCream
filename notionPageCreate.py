@@ -47,8 +47,7 @@ chunk_size = NOTION_CHUNK_SIZE  # Notion的URL限制
 for i in range(0, len(image_urls), chunk_size):
     chunk_urls = image_urls[i:i+chunk_size]
     page_index = (i // chunk_size) + 1
-    page_title = "eyes cream" if page_index == 1 else f"eyes cream {page_index}"
-    
+    page_title = f"{today.strftime('%Y-%m-%d')}" if page_index == 1 else f"{today.strftime('%Y-%m-%d')} {page_index}"
     # 建立新頁面
     new_page = create_notion_page(page_title, today)
     page_id = new_page['id']
