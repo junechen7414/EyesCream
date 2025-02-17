@@ -1,5 +1,4 @@
 # import library
-import json 
 import requests 
 from bs4 import BeautifulSoup as BS 
 import time
