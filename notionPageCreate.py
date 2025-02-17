@@ -36,8 +36,6 @@ def create_notion_page(page_title, date_value):
 # 獲取今天的日期
 today = get_today_date()
 
-# 若要指定日期來生成notion page
-# today = datetime(2025, 2, 8)
 
 # 處理圖片URL的主要邏輯
 image_urls = get_images()

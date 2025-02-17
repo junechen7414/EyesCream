@@ -15,9 +15,6 @@ def Main():
     
     # 使用config中的函數獲取昨天日期
     yesterday = get_yesterday_date()
-
-    # 指定日期，但又懶得從today開始改再計算yesterday
-    # yesterday = datetime.datetime(2024, 2, 9)
     yesterday_str = f"{yesterday.month}/{yesterday.day:02d}"
     
     # 初始化變數用來記錄爬取的文章和總爬取的頁數
