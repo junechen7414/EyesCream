@@ -24,19 +24,19 @@ def Main():
     while page_count < max_page:  # 設定最多爬幾頁避免無限循環
         full_url = f"{base_url}{sub_url}" # 組合URL
         
-        response = session.get(full_url, cookies={'over18': '1'}) # 設定網站的cookie確認成年
+        response = session.get(full_url, cookies=cookies) # 設定網站的cookie確認成年
         bs = BS(response.text, "html.parser") # BeautifulSoup解析網頁
         
         # 找出所有文章列表項目
         articles = bs.find_all("div", class_="r-ent")
-        # 文章列表中找出今天的文章
+        # 文章列表中找出昨天的文章
         for article in articles:
             date = article.find("div", class_="date").text.strip()
             title_div = article.find("div", class_="title")
             
-            if date == yesterday_str:  # 找到今天的文章                               
+            if date == yesterday_str:  # 找到昨天的文章                               
                 title = title_div.text.strip()
-                if "Cosplay" in title or "帥哥" in title:
+                if "Cosplay" in title or "帥哥" in title or "神人" in title:
                     continue
                 parsed_title = SplitTitle(title)
                 if parsed_title is None:
