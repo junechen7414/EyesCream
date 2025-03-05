@@ -20,7 +20,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-在專案目錄下建立config.py
+在專案目錄下建立config.py，將其中```your_notion_token```以及```your_notion_database_id```替換為實際值
 ```
 from datetime import datetime, timedelta
 
