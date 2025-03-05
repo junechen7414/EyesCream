@@ -1,3 +1,5 @@
+# **說明 / Introduction [每日排程爬蟲PTT圖片上傳Notion圖庫](https://ithelp.ithome.com.tw/articles/10369755)**
+
 Python version 3.7 or newer
 
 在專案目錄下建立 venv 虛擬環境
