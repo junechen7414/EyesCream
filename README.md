@@ -49,12 +49,17 @@ IMAGE_BLACKLIST = [  #常見的推廣社群軟體
     "https://youtu"
 ]
 
-def get_yesterday_date():
-    yesterday = datetime.now() - timedelta(days=1)
-    return yesterday
+# 設定爬取的日期區間 (YYYY, MM, DD)
+START_DATE = datetime(2025, 5, 22)
+END_DATE = datetime(2025, 5, 24)
 
-def get_today_date():
-    today = datetime.now()
-    return today
+def get_date_range():
+    """獲取指定日期區間內的每一天"""
+    date_list = []
+    current_date = START_DATE
+    while current_date <= END_DATE:
+        date_list.append(current_date)
+        current_date += timedelta(days=1)
+    return date_list
 
 ```
