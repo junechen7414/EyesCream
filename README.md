@@ -34,6 +34,9 @@ PTT_COOKIES = {'over18': '1'}
 NOTION_SECRET = "your_notion_token"
 DATABASE_ID = "your_notion_database_id"
 
+# 設定最多爬取幾頁，避免無限循環
+MAX_PAGE = 10
+
 # 圖片相關配置
 NOTION_CHUNK_SIZE = 100  #Notion 分頁中圖片數量最多為100，也可設定較小數字
 IMAGE_BLACKLIST = [  #常見的推廣社群軟體
