@@ -9,4 +9,4 @@ REM 3. 執行 Python 爬蟲腳本
 python notionPageCreate.py
 
 REM 4. 可選：執行完後暫停（debug 時用）
-@REM pause
+pause
