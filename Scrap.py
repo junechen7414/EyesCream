@@ -123,7 +123,7 @@ def Main():
             if START_DATE <= article_date_obj <= END_DATE:
                 title = title_div.text.strip()
                 # 只處理標題包含 "[正妹]" 的文章，跳過其他標題
-                if "[正妹]" not in title:
+                if "[正妹]" not in title or "Cosplay" in title or "cosplay" in title:
                     continue
 
                 title_link = title_div.find('a')
