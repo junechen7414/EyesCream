@@ -35,7 +35,7 @@ NOTION_SECRET = "your_notion_token"
 DATABASE_ID = "your_notion_database_id"
 
 # 設定最多爬取幾頁，避免無限循環
-MAX_PAGE = 10
+MAX_PAGE = 100
 
 # 圖片相關配置
 NOTION_CHUNK_SIZE = 100  #Notion 分頁中圖片數量最多為100，也可設定較小數字
@@ -46,20 +46,12 @@ IMAGE_BLACKLIST = [  #常見的推廣社群軟體
     "https://x.com/",  
     "twitter",
     "youtube",
-    "https://youtu"
+    "https://youtu",
+    "threads"
 ]
 
 # 設定爬取的日期區間 (YYYY, MM, DD)
 START_DATE = datetime(2025, 5, 22)
 END_DATE = datetime(2025, 5, 24)
-
-def get_date_range():
-    """獲取指定日期區間內的每一天"""
-    date_list = []
-    current_date = START_DATE
-    while current_date <= END_DATE:
-        date_list.append(current_date)
-        current_date += timedelta(days=1)
-    return date_list
 
 ```
