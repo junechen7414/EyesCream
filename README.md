@@ -1,5 +1,7 @@
-# **說明 / Introduction [每日排程爬蟲PTT圖片上傳Notion圖庫](https://ithelp.ithome.com.tw/articles/10369755)**
-
+# 說明 / Introduction
+以前的說明(已過時)[每日排程爬蟲PTT圖片上傳Notion圖庫](https://ithelp.ithome.com.tw/articles/10369755)  
+之所以要換做法是因為每天如果到排程的時段電腦就關機了就沒有辦法執行了，畢竟是本地端的爬蟲，PTT又有限制不能夠用雲端連線，於是權衡之後改成爬蟲一個日期區間的文章中的圖片。  
+大部分的內容還是跟之前說明的文章一樣，只是爬蟲的演算法有經過修正，從本來的日期迴圈換成文章迴圈，應會在效能上省去原先一些不必要的消耗。  
 Python version 3.7 or newer
 
 在專案目錄下建立 venv 虛擬環境
