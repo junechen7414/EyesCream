@@ -5,9 +5,9 @@ from config import (
     NOTION_CHUNK_SIZE
 )
 
-# 因為Scrap.py在同一個資料夾,可以直接import不需要加入sys.path
+# 因為Scraper.py在同一個資料夾,可以直接import不需要加入sys.path
 # 直接匯入 scrape_ptt_images 函式
-from Scrap import scrape_ptt_images
+from Scraper import scrape_ptt_images
 
 notion = Client(auth=NOTION_SECRET)
 
