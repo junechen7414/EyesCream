@@ -8,7 +8,8 @@ import sys # 導入 sys 模組用於 sys.exit()
 from config import PTT_BASE_URL, PTT_COOKIES, IMAGE_BLACKLIST, START_DATE, END_DATE, MAX_PAGE
 from datetime import datetime, date # 確保導入了 datetime 和 date
 
-def Main():
+# 將 Main 函式重新命名為 scrape_ptt_images，並移除 if __name__ == "__main__": 區塊
+def scrape_ptt_images():
     # 獲取實際的當前日期
     current_actual_date = date.today()
 
@@ -224,15 +225,3 @@ def ExtractImages(url, cookies, session):
     except Exception as e: # 捕獲其他可能的請求/解析錯誤
         print(f"An error occurred while processing {url}: {e}")
         return []
-
-
-if __name__ == "__main__":
-    # 在這裡執行時，仍然會印出所有圖片的總數，但Main函式回傳的是字典
-    images_data = Main()
-    total_images = sum(len(urls) for urls in images_data.values())
-    print(f"找到{total_images} 張圖片")
-    # (可選) 印出按日期分組的圖片連結以供驗證
-    # for date, urls in images_data.items():
-    #     print(f"\n日期: {date.strftime('%Y-%m-%d')}")
-    #     for url in urls:
-    #         print(url)
