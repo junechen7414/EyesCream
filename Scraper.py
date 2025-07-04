@@ -8,7 +8,37 @@ import sys # 導入 sys 模組用於 sys.exit()
 from config import PTT_BASE_URL, PTT_COOKIES, IMAGE_BLACKLIST, START_DATE, END_DATE, MAX_PAGE
 from datetime import datetime, date # 確保導入了 datetime 和 date
 
-# 將 Main 函式重新命名為 scrape_ptt_images，並移除 if __name__ == "__main__": 區塊
+
+# 新增一個輔助函式來解析 PTT 的 MM/DD 日期格式
+def parse_ptt_date(date_str, current_year, current_date):
+    """
+    解析 PTT 的 MM/DD 日期格式，並根據當前日期判斷年份。
+
+    Args:
+        date_str (str): PTT 文章的日期字串 (MM/DD)。
+        current_year (int): 當前的年份。
+        current_date (date): 實際的當前日期 (datetime.date 物件)。
+
+    Returns:
+        date: 解析後的日期 (datetime.date 物件)，如果解析失敗則回傳 None。
+    """
+    try:
+        # 嘗試使用當前年份解析日期
+        parsed_date_this_year = datetime.strptime(f"{current_year}/{date_str}", "%Y/%m/%d").date()
+
+        # 根據解析出的日期是否晚於實際當前日期來判斷年份
+        if parsed_date_this_year > current_date:
+             # 如果解析出的日期在未來，則實際年份應為前一年
+             return datetime.strptime(f"{current_year - 1}/{date_str}", "%Y/%m/%d").date()
+        else:
+             # 否則，實際年份為當前年份
+             return parsed_date_this_year
+
+    except ValueError:
+        print(f"無法解析日期: {date_str}")
+        return None
+
+
 def scrape_ptt_images():
     # 獲取實際的當前日期
     current_actual_date = date.today()
@@ -61,7 +91,6 @@ def scrape_ptt_images():
             print("頁面未找到文章，停止爬取。")
             break
 
-        # 移除 articles.reverse()，保持文章列表從最舊到最新的順序
 
         oldest_article_date_on_page = None # 用來記錄本頁最舊文章的日期
 
@@ -72,22 +101,11 @@ def scrape_ptt_images():
             date_div = first_article.find("div", class_="date")
             if date_div:
                  date_str = date_div.text.strip()
-                 try:
-                     # 嘗試使用當前年份解析日期
-                     parsed_date_this_year = datetime.strptime(f"{current_year}/{date_str}", "%Y/%m/%d").date()
+                 # 使用輔助函式解析日期
+                 oldest_article_date_on_page = parse_ptt_date(date_str, current_year, current_date)
 
-                     # 根據解析出的日期是否晚於實際當前日期來判斷年份
-                     if parsed_date_this_year > current_date:
-                          # 如果解析出的日期在未來，則實際年份應為前一年
-                          oldest_article_date_on_page = datetime.strptime(f"{current_year - 1}/{date_str}", "%Y/%m/%d").date()
-                     else:
-                          # 否則，實際年份為當前年份
-                          oldest_article_date_on_page = parsed_date_this_year
-
-                 except ValueError:
-                     print(f"無法解析本頁最舊文章日期: {date_str} (頁面: {full_url})")
+                 if oldest_article_date_on_page is None:
                      # 如果無法解析最舊文章日期，則無法精確判斷停止條件
-                     # 這裡可以選擇繼續 (依賴 MAX_PAGE) 或停止 (更安全)
                      # 為了安全起見，如果無法解析最舊日期，我們設定停止標記
                      stop_scraping = True # Treat unparseable date as a reason to stop
 
@@ -103,22 +121,11 @@ def scrape_ptt_images():
 
             date_str = date_div.text.strip()
 
-            # 解析文章日期 (PTT 日期格式為 MM/DD)
-            try:
-                # 嘗試使用當前年份解析日期
-                parsed_date_this_year = datetime.strptime(f"{current_year}/{date_str}", "%Y/%m/%d").date()
+            # 使用輔助函式解析文章日期
+            article_date_obj = parse_ptt_date(date_str, current_year, current_date)
 
-                # 根據解析出的日期是否晚於實際當前日期來判斷年份
-                if parsed_date_this_year > current_date:
-                     # 如果解析出的日期在未來，則實際年份應為前一年
-                     article_date_obj = datetime.strptime(f"{current_year - 1}/{date_str}", "%Y/%m/%d").date()
-                else:
-                     # 否則，實際年份為當前年份
-                     article_date_obj = parsed_date_this_year
-
-            except ValueError:
-                print(f"無法解析日期: {date_str} (頁面: {full_url})")
-                continue # 跳過此文章
+            if article_date_obj is None:
+                continue # 跳過此文章，因為日期無法解析
 
             # 如果文章日期在目標區間 [START_DATE, END_DATE] 內，則處理
             if START_DATE <= article_date_obj <= END_DATE:
