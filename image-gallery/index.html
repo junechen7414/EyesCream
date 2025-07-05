@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Gallery</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="gallery-container" tabindex="0">
+        <!-- 主要圖片顯示區域 -->
+        <div class="image-wrapper">
+            <img id="main-image" alt="Gallery image" />
+        </div>
+
+        <!-- 控制項疊層 -->
+        <div class="controls-overlay">
+            <!-- 上一張按鈕 -->
+            <button id="prev-button" class="nav-button prev-button" aria-label="上一張">‹</button>
+            
+            <!-- 下一張按鈕 -->
+            <button id="next-button" class="nav-button next-button" aria-label="下一張">›</button>
+
+            <!-- 底部控制列 -->
+            <div id="bottom-bar" class="bottom-bar">
+                <!-- 播放速度選擇 -->
+                <div class="speed-control">
+                    <label for="speed-select">速度:</label>
+                    <select id="speed-select">
+                        <option value="5000">慢</option>
+                        <option value="3000" selected>中</option>
+                        <option value="1500">快</option>
+                    </select>
+                </div>
+
+                <!-- 進度/拖拉條 -->
+                <input type="range" id="progress-slider" class="progress-slider" value="0" aria-label="圖片進度" />
+                
+                <!-- 圖片計數器 -->
+                <span id="image-counter" class="image-counter"></span>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
