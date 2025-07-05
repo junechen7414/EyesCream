@@ -1,15 +1,25 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // --- 狀態 (State) ---
-    const images = [
-      'https://images.unsplash.com/photo-1682687220247-9f786e34d472?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=1920',
-      'https://images.unsplash.com/photo-1700162433346-4853c104818c?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=1920',
-      'https://images.unsplash.com/photo-1699491712423-76a7599b5959?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=1920',
-      'https://images.unsplash.com/photo-1700223889311-5cb524344389?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=1920',
-      'https://images.unsplash.com/photo-1699743216235-3147a353c54c?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=1920',
-    ];
+    let images = [];
     let currentIndex = 0;
     let autoplaySpeed = 3000;
     let autoplayIntervalId = null;
+
+    // --- 函式庫：從文字檔載入圖片 ---
+    async function loadImagesFromTxt(filePath) {
+        try {
+            const response = await fetch(filePath);
+            if (!response.ok) {
+                throw new Error(`HTTP 錯誤！ 狀態: ${response.status}`);
+            }
+            const text = await response.text();
+            return text.split('\n').filter(url => url.trim() !== '');
+        } catch (error) {
+            console.error('無法載入圖片列表檔案:', error);
+            galleryContainer.innerHTML = '<p style="color: red; text-align: center;">無法載入圖片列表，請檢查 sample.txt 檔案是否存在且路徑正確。</p>';
+            return [];
+        }
+    }
 
     // --- DOM 元素 ---
     const galleryContainer = document.getElementById('gallery-container');
@@ -20,6 +30,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressSlider = document.getElementById('progress-slider');
     const imageCounter = document.getElementById('image-counter');
 
+    // --- 效能優化：預載入下一張圖片 ---
+    function preloadNextImage() {
+        if (images.length < 2) return; // 如果圖片少於2張，則無需預載入
+
+        const nextIndex = (currentIndex + 1) % images.length;
+        const preloadLink = document.createElement('link');
+        preloadLink.rel = 'preload';
+        preloadLink.as = 'image';
+        preloadLink.href = images[nextIndex];
+        document.head.appendChild(preloadLink);
+        // 為了避免 head 標籤無限增長，可以在一段時間後移除它，但現代瀏覽器通常能很好地處理
+    }
+
     // --- 核心函式：更新所有 UI 元素 ---
     function updateGallery(isInstant = false) {
         if (images.length === 0) return;
@@ -29,6 +52,9 @@ document.addEventListener('DOMContentLoaded', () => {
             progressSlider.value = currentIndex;
             imageCounter.textContent = `${currentIndex + 1} / ${images.length}`;
             mainImage.classList.remove('fade');
+
+            // 當新圖片顯示後，立即開始預載入下一張
+            preloadNextImage();
         };
 
         if (isInstant) {
@@ -88,20 +114,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     window.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === 'ArrowDown') {
             nextImage();
-        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'ArrowUp') {
             prevImage();
         }
     });
 
     // --- 初始化 ---
     function init() {
+        if (images.length === 0) return; // 如果沒有圖片，則不進行初始化
         progressSlider.max = images.length - 1;
         updateGallery(true); // 首次載入，立即顯示
         startAutoplay();
         galleryContainer.focus();
     }
 
+    // --- 應用程式啟動 ---
+    images = await loadImagesFromTxt('sample.txt');
     init();
 });
