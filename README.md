@@ -14,11 +14,11 @@ py -m venv venvName
 activate.bat 啟用虛擬環境  
 Windows
 ```bash
-venv\Scripts\activate
+venvName\Scripts\activate
 ```
 macOS or Linux
 ```bash
-source venv/bin/activate
+source venvName/bin/activate
 ```
 
 安裝套件
