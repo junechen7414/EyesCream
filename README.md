@@ -59,3 +59,4 @@ START_DATE = datetime(2025, 5, 22)
 END_DATE = datetime(2025, 5, 24)
 
 ```
+最後再使用管理員權限執行批次檔
