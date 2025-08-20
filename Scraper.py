@@ -5,6 +5,8 @@ import time
 import sys # 導入 sys 模組用於 sys.exit()
 from config import PTT_BASE_URL, PTT_COOKIES, IMAGE_BLACKLIST, START_DATE, END_DATE, MAX_PAGE
 from datetime import datetime, date # 確保導入了 datetime 和 date
+import concurrent.futures # 導入 concurrent.futures 模組
+
 
 def is_imgur_image_valid(url):
     """
@@ -142,6 +144,9 @@ def scrape_ptt_images():
                     # 為了安全起見，如果無法解析最舊日期，我們設定停止標記
                     stop_scraping = True # Treat unparseable date as a reason to stop
 
+        # 步驟 1: 收集本頁面所有符合條件的文章任務
+        # article_tasks 將儲存 (文章URL, 文章日期) 的元組 (tuple)
+        article_tasks = []
 
         # 遍歷頁面上的文章 (從最舊到最新)
         for article in articles:
@@ -183,14 +188,34 @@ def scrape_ptt_images():
                 if title_link:
                     post_url = base_url + title_link.get('href')
                     # 調用修改後的 ExtractImages 函數，它會包含 Imgur 有效性檢查
-                    images = ExtractImages(post_url, cookies, session)
+                    article_tasks.append((post_url, article_date_obj))
+        
+        # 步驟 2: 使用 ThreadPoolExecutor 並行執行所有文章的圖片提取任務
+        if article_tasks:
+            # max_workers=10 表示最多同時有10個執行緒在工作
+            with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+                # 建立 future 物件，將任務提交給執行緒池
+                # future_to_task 讓我們可以在任務完成後，知道它對應的是哪個日期
+                future_to_task = {
+                    executor.submit(ExtractImages, task[0], cookies, session): task 
+                    for task in article_tasks
+                }
 
-                    # 將圖片連結加入到對應日期的字典中
-                    # 使用 article_date_obj 作為字典的鍵
-                    if article_date_obj not in images_by_date:
-                        images_by_date[article_date_obj] = []
-                    images_by_date[article_date_obj].extend(images)
-
+                # 步驟 3: 收集並行處理的結果
+                for future in concurrent.futures.as_completed(future_to_task):
+                    # 從字典中取回原始任務資訊 (文章URL, 日期)
+                    post_url, article_date_obj = future_to_task[future]
+                    try:
+                        # 獲取 ExtractImages 函式的回傳結果 (圖片連結列表)
+                        image_urls_from_post = future.result()
+                        if image_urls_from_post:
+                            # 如果該日期還沒有在字典中，則初始化一個空列表
+                            if article_date_obj not in images_by_date:
+                                images_by_date[article_date_obj] = []
+                            # 將獲取到的圖片連結加入對應日期的列表中
+                            images_by_date[article_date_obj].extend(image_urls_from_post)
+                    except Exception as exc:
+                        print(f'從文章 {post_url} 提取圖片時產生錯誤: {exc}')
 
         # 在處理完本頁所有文章後，檢查本頁最舊文章的日期
         # 如果本頁最舊文章的日期早於 START_DATE，則設定停止標記
@@ -244,6 +269,10 @@ def ExtractImages(url, cookies, session):
         links = []
         # 檢查 main_content 是否存在且有內容
         if main_content and main_content.contents:
+            # 1. 先收集所有潛在的 Imgur 連結和非 Imgur 連結
+            imgur_links_to_check = []
+            other_links = []
+
             for element in main_content.contents:  # 遍歷所有子節點 (包括 #text)
                 if isinstance(element, str) and element.strip() == "--":
                     break  # 遇到 "--" 則停止
@@ -252,21 +281,30 @@ def ExtractImages(url, cookies, session):
                     href = element['href']
 
                     # 黑名單過濾: 如果網址包含黑名單中的關鍵字，就跳過
-                    if any(blacklisted in href for blacklisted in BLACKLIST):
-                        print(f"Skipping blacklisted link: {href}")
+                    if any(blacklisted in href for blacklisted in BLACKLIST):                        
                         continue
                     
                     # 判斷是否為 Imgur 連結，如果是，則額外使用 is_imgur_image_valid 進行驗證
                     if "imgur.com" in href: # 簡單判斷是否為 Imgur 連結
-                        if is_imgur_image_valid(href):
-                            links.append(href)
-                            print(f"Validated Imgur link added: {href}")
-                        else:
-                            print(f"Invalid Imgur link skipped: {href}")
+                        imgur_links_to_check.append(href)
+                        
                     else:
                         # 對於非 Imgur 連結，直接加入 (可根據需要添加其他圖片服務的驗證)
-                        links.append(href)
-                        print(f"Non-Imgur link added: {href}")
+                        other_links.append(href)
+                        
+
+            # 2. 使用 ThreadPoolExecutor 並行驗證 Imgur 連結
+            valid_imgur_links = []
+            with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+                future_to_url = {executor.submit(is_imgur_image_valid, imgur_url): imgur_url for imgur_url in imgur_links_to_check}
+                for future in concurrent.futures.as_completed(future_to_url):
+                    imgur_url = future_to_url[future]
+                    if future.result():
+                        valid_imgur_links.append(imgur_url)
+            
+            # 3. 合併結果
+            links.extend(valid_imgur_links)
+            links.extend(other_links)
 
         print(f"Extracted {len(links)} valid images from {url}")
         return links

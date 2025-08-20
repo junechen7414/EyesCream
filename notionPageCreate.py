@@ -1,4 +1,5 @@
 from notion_client import Client
+import concurrent.futures # 導入 concurrent.futures 模組
 from config import (
     NOTION_SECRET,
     DATABASE_ID,
@@ -39,41 +40,37 @@ def create_notion_page(page_title, date_value):
 images_by_date = scrape_ptt_images()
 chunk_size = NOTION_CHUNK_SIZE  # Notion的URL限制
 
-# 遍歷每個日期及其圖片列表
-for date, image_urls in images_by_date.items():
-    if not image_urls:
-        print(f"日期 {date.strftime('%Y-%m-%d')} 沒有找到圖片，跳過建立頁面。")
-        continue
-
-    # 將URLs分組處理
-    for i in range(0, len(image_urls), chunk_size):
-        chunk_urls = image_urls[i:i+chunk_size]
-        page_index = (i // chunk_size) + 1
-        # 使用圖片的原始發布日期作為頁面標題
-        page_title = f"{date.strftime('%Y-%m-%d')}" if page_index == 1 else f"{date.strftime('%Y-%m-%d')} {page_index}"
-
-        # 建立新頁面，使用圖片的原始發布日期
+# 定義一個函式來處理單一頁面的建立與更新
+def process_page_creation(date, chunk_urls, page_index):
+    page_title = f"{date.strftime('%Y-%m-%d')}" if page_index == 1 else f"{date.strftime('%Y-%m-%d')} {page_index}"
+    try:
         new_page = create_notion_page(page_title, date)
         page_id = new_page['id']
         print(f"成功建立頁面 {page_title}，Page ID: {page_id}")
 
-        # 建立當前分組的blocks
-        children_blocks = [
-            {
-                "object": "block",
-                "type": "embed",
-                "embed": {
-                    "url": url
-                }
-            }
-            for url in chunk_urls
-        ]
-
-        # 更新頁面內容
-        notion.blocks.children.append(
-            block_id=page_id,
-            children=children_blocks
-        )
+        children_blocks = [{"object": "block", "type": "embed", "embed": {"url": url}} for url in chunk_urls]
+        notion.blocks.children.append(block_id=page_id, children=children_blocks)
         print(f"成功更新頁面 {page_title} 的內容")
+    except Exception as e:
+        print(f"處理頁面 {page_title} 時發生錯誤: {e}")
+
+# 使用 ThreadPoolExecutor 來並行處理所有頁面
+with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor: # Notion API 有速率限制，max_workers 不宜過高
+    futures = []
+# 遍歷每個日期及其圖片列表
+    for date, image_urls in images_by_date.items():
+        if not image_urls:
+            print(f"日期 {date.strftime('%Y-%m-%d')} 沒有找到圖片，跳過建立頁面。")
+            continue
+
+        # 將URLs分組處理
+        for i in range(0, len(image_urls), chunk_size):
+            chunk_urls = image_urls[i:i+chunk_size]
+            page_index = (i // chunk_size) + 1
+            futures.append(executor.submit(process_page_creation, date, chunk_urls, page_index))
+
+        # 等待所有任務完成
+    for future in concurrent.futures.as_completed(futures):
+        future.result() # 檢查是否有異常拋出
 
 print("全部操作完成！請檢查您的 Notion 日曆。")
