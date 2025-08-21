@@ -3,7 +3,10 @@ import concurrent.futures # 導入 concurrent.futures 模組
 from config import (
     NOTION_SECRET,
     DATABASE_ID,
-    NOTION_CHUNK_SIZE
+    NOTION_CHUNK_SIZE,
+    START_DATE,      # 匯入開始日期
+    END_DATE,        # 匯入結束日期
+    MAX_PAGE         # 匯入最大頁數
 )
 
 # 因為Scraper.py在同一個資料夾,可以直接import不需要加入sys.path
@@ -36,8 +39,19 @@ def create_notion_page(page_title, date_value):
 
 # 處理圖片URL的主要邏輯
 # 獲取按日期分組的圖片連結字典
-# 直接在頂層呼叫匯入的函式
-images_by_date = scrape_ptt_images()
+# 直接在頂層呼叫匯入的函式，並傳入必要的參數
+try:
+    print("開始從 PTT 爬取圖片資料...")
+    images_by_date = scrape_ptt_images(
+        start_date=START_DATE, 
+        end_date=END_DATE, 
+        max_pages=MAX_PAGE
+    )
+    print("資料爬取完成。")
+except ValueError as e:
+    print(f"[設定錯誤] {e}")
+    exit() # 如果日期設定錯誤，直接結束程式
+
 chunk_size = NOTION_CHUNK_SIZE  # Notion的URL限制
 
 # 定義一個函式來處理單一頁面的建立與更新
@@ -55,6 +69,7 @@ def process_page_creation(date, chunk_urls, page_index):
         print(f"處理頁面 {page_title} 時發生錯誤: {e}")
 
 # 使用 ThreadPoolExecutor 來並行處理所有頁面
+print("開始建立 Notion 頁面...")
 with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor: # Notion API 有速率限制，max_workers 不宜過高
     futures = []
 # 遍歷每個日期及其圖片列表
