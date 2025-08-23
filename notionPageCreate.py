@@ -4,25 +4,24 @@ from config import (
     NOTION_SECRET,
     DATABASE_ID,
     NOTION_CHUNK_SIZE,
-    START_DATE,      # 匯入開始日期
-    END_DATE,        # 匯入結束日期
-    MAX_PAGE         # 匯入最大頁數
+    START_DATE,
+    END_DATE,
+    MAX_PAGE
 )
 from Scraper import scrape_ptt_images
 import logging
-import logging.config # 1. 匯入 logging.config
+import logging.config
 
-# --- 設定日誌 ---
-# 2. 移除舊的 basicConfig，改用 fileConfig 讀取設定檔
+# 從設定檔載入日誌設定
 logging.config.fileConfig('logging.ini',encoding='utf-8')
 
-# 3. 取得一個 logger 實例，推薦用 __name__ 當作名稱
+# 取得此模組的 logger 實例
 logger = logging.getLogger(__name__)
 
 notion = Client(auth=NOTION_SECRET)
 
-# 修改建立頁面的邏輯為函數
 def create_notion_page(page_title, date_value):
+    """根據標題和日期，在 Notion 中建立一個新頁面。"""
     properties = {
         "名稱": {
             "title": [
@@ -44,15 +43,11 @@ def create_notion_page(page_title, date_value):
     try:
         return notion.pages.create(parent=parent, properties=properties)
     except Exception as e:
-        # 將 logging.error 改為 logger.error
         logger.error(f"建立 Notion 頁面 '{page_title}' 失敗: {e}")
         return None
 
-# 處理圖片URL的主要邏輯
-# 獲取按日期分組的圖片連結字典
-# 直接在頂層呼叫匯入的函式，並傳入必要的參數
 def main():
-    """主執行函式"""
+    """主執行函式，協調爬蟲與 Notion 頁面建立。"""
     try:
         logger.info("開始從 PTT 爬取圖片資料...")
         images_by_date = scrape_ptt_images(
@@ -65,10 +60,10 @@ def main():
         logger.error(f"[設定錯誤] {e}")
         return # 如果日期設定錯誤，直接結束程式
 
-    chunk_size = NOTION_CHUNK_SIZE  # Notion的URL限制
+    chunk_size = NOTION_CHUNK_SIZE
 
-    # 定義一個函式來處理單一頁面的建立與更新
     def process_page_creation(date, chunk_urls, page_index):
+        """(執行緒任務) 建立單一 Notion 頁面並填入圖片區塊。"""
         page_title = f"{date.strftime('%Y-%m-%d')}" if page_index == 1 else f"{date.strftime('%Y-%m-%d')} {page_index}"
         
         new_page = create_notion_page(page_title, date)
@@ -85,26 +80,26 @@ def main():
         except Exception as e:
             logger.error(f"更新頁面 {page_title} 內容時發生錯誤: {e}")
 
-    # 使用 ThreadPoolExecutor 來並行處理所有頁面
+    # 使用執行緒池並行處理所有頁面的建立與更新
     logger.info("開始建立 Notion 頁面...")
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor: # Notion API 有速率限制，max_workers 不宜過高
         futures = []
-    # 遍歷每個日期及其圖片列表
+        # 遍歷每個日期及其圖片列表
         for date, image_urls in images_by_date.items():
             if not image_urls:
                 logger.info(f"日期 {date.strftime('%Y-%m-%d')} 沒有找到圖片，跳過建立頁面。")
                 continue
 
-            # 將URLs分組處理
+            # 因 Notion API 對單次請求的 block 數量有限制，需將圖片分塊處理
             for i in range(0, len(image_urls), chunk_size):
                 chunk_urls = image_urls[i:i+chunk_size]
                 page_index = (i // chunk_size) + 1
                 futures.append(executor.submit(process_page_creation, date, chunk_urls, page_index))
 
-            # 等待所有任務完成
+        # 等待所有並行任務完成
         for future in concurrent.futures.as_completed(futures):
             try:
-                future.result() # 檢查是否有異常拋出
+                future.result() # 檢查執行緒中是否有異常拋出
             except Exception as e:
                 logger.error(f"執行緒池任務發生錯誤: {e}")
 

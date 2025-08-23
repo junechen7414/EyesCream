@@ -8,9 +8,7 @@ import concurrent.futures
 from typing import Dict, List, Optional, Tuple
 import logging
 
-# --- 設定日誌 ---
-# 1. 移除 logging.basicConfig(...)
-# 2. 取得一個 logger 實例
+# 取得此模組的 logger 實例
 logger = logging.getLogger(__name__)
 
 # --- 圖片驗證與連結提取函式 ---
