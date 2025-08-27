@@ -1,3 +1,6 @@
+import logging
+import logging.config
+import concurrent.futures
 from notion_client import Client
 
 # --- 優先設定日誌 ---
@@ -15,11 +18,6 @@ from config import (
     MAX_PAGE
 )
 from Scraper import scrape_ptt_images
-import logging
-import logging.config
-
-# 從設定檔載入日誌設定
-logging.config.fileConfig('logging.ini',encoding='utf-8')
 
 # 取得此模組的 logger 實例
 logger = logging.getLogger(__name__)
@@ -70,7 +68,7 @@ def main():
 
     def process_page_creation(date, chunk_urls, page_index):
         """(執行緒任務) 建立單一 Notion 頁面並填入圖片區塊。"""
-        page_title = f"{date.strftime('%Y-%m-%d')}" if page_index == 1 else f"{date.strftime('%Y-%m-%d')} {page_index}"
+        page_title = f"{date.strftime('%Y-%m-%d')}" if 1 == page_index else f"{date.strftime('%Y-%m-%d')} {page_index}"
         
         new_page = create_notion_page(page_title, date)
         if not new_page:
@@ -111,5 +109,5 @@ def main():
 
     logger.info("全部操作完成！請檢查您的 Notion 日曆。")
 
-if __name__ == "__main__":
+if "__main__" == __name__:
     main()

@@ -11,6 +11,13 @@ import logging
 # 取得此模組的 logger 實例
 logger = logging.getLogger(__name__)
 
+# Imgur 的無效或重導向目標 URL 集合
+INVALID_IMGUR_URLS = {
+    "https://imgur.com/",
+    "https://i.imgur.com/",
+    "https://i.imgur.com/removed.png"
+}
+
 # --- 圖片驗證與連結提取函式 ---
 
 def is_imgur_image_valid(url: str) -> bool:
@@ -23,7 +30,7 @@ def is_imgur_image_valid(url: str) -> bool:
         response = requests.head(url, headers=headers, allow_redirects=True, timeout=10)
         response.raise_for_status()
         # 檢查最終是否導向已移除的圖片或首頁
-        if response.url in ["https://imgur.com/", "https://i.imgur.com/", "https://i.imgur.com/removed.png"]:
+        if response.url in INVALID_IMGUR_URLS:
             return False
         return True
     except requests.exceptions.RequestException:
@@ -49,9 +56,9 @@ def fetch_and_extract_links(post_url: str, session: requests.Session) -> List[st
     # 1. 提取所有潛在連結
     potential_links = []
     for element in main_content.contents:
-        if isinstance(element, str) and element.strip() == "--":
+        if isinstance(element, str) and "--" == element.strip():
             break  # 遇到簽名檔分隔線 "--" 則停止
-        if element.name == 'a' and 'href' in element.attrs:
+        if 'a' == element.name and 'href' in element.attrs:
             href = element['href']
             # 過濾掉黑名單中的網址
             if not any(blacklisted in href for blacklisted in IMAGE_BLACKLIST):
