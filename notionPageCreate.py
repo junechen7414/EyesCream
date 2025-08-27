@@ -1,5 +1,11 @@
 from notion_client import Client
-import concurrent.futures
+
+# --- 優先設定日誌 ---
+# 確保在匯入任何自訂模組之前，就完成日誌設定
+# 這樣所有後續匯入的模組在呼叫 getLogger 時，都能獲得正確的設定
+logging.config.fileConfig('logging.ini', encoding='utf-8')
+
+# --- 現在才匯入其他模組 ---
 from config import (
     NOTION_SECRET,
     DATABASE_ID,
