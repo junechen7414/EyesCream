@@ -1,7 +1,7 @@
 # 說明 / Introduction
 以前的說明(已過時)[每日排程爬蟲PTT圖片上傳Notion圖庫](https://ithelp.ithome.com.tw/articles/10369755)  
 
-之所以從本地端爬蟲PTT圖片，是因為PTT有限制不能夠用雲端連線(從第三方工具pyptt說明文件中讀到的，自己找robot.txt沒什麼結果選擇相信)，選擇一個日期區間並僅限標題內容包含"正妹"且同時標題內容不包含"Cosplay"(personal preference)的文章。  
+之所以從本地端爬蟲PTT圖片，是因為PTT有限制不能夠用雲端連線(從第三方工具pyptt說明文件中讀到的，自己找robot.txt沒什麼結果選擇相信)，選擇一個日期區間並僅限標題內容包含"正妹"且同時標題內容不包含"Cosplay"(personal preference)的文章把圖片蒐集起來上傳到個人的notion資料庫中。  
 ***
 作業系統: Windows 11  
 使用uv安裝和執行步驟:  
@@ -18,7 +18,10 @@
 2. 重啟終端機後執行指令: `uv sync`
 
     uv sync指令會讀取uv.lock檔案(which 依照pyproject.toml的定義管理間接依賴和構建虛擬環境等)
-3. 執行程式by 執行指令: `uv run notionPageCreate.py`
+3. 在路徑建立.env資料夾並加入notion資料庫資訊:
+    NOTION_SECRET= "Notion Integration Token (須注意只會生成一次，並且該Integration要先在Notion的Database中"連接"這個選項中先加入)"
+    DATABASE_ID= "Notion Database ID(通常用瀏覽器開啟並取url中 "notion.so/" 後面的字串就是了)"
+4. 執行程式by 執行指令: `uv run notionPageCreate.py`
 
     uv run會尋找路徑中的虛擬環境並使用虛擬環境執行程式；  
     如果找不到接著會找pyproject.toml或是requirements.txt並建立一個虛擬環境安裝其中套件並在執行完畢後清掉虛擬環境；  

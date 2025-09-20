@@ -22,5 +22,5 @@ IMAGE_BLACKLIST = [
 MAX_PAGE = 100
 
 # 設定爬取的日期區間 (YYYY, MM, DD)
-START_DATE = date(2025, 9, 11)
+START_DATE = date(2025, 9, 12)
 END_DATE = date(2025, 9, 19)
