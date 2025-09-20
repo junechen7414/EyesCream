@@ -1,62 +1,25 @@
 # 說明 / Introduction
 以前的說明(已過時)[每日排程爬蟲PTT圖片上傳Notion圖庫](https://ithelp.ithome.com.tw/articles/10369755)  
 
-之所以要換做法是因為每天如果到排程的時段電腦就關機了就沒有辦法執行了，畢竟是本地端的爬蟲，PTT又有限制不能夠用雲端連線，於是權衡之後改成爬蟲一個日期區間的文章中的圖片。  
-大部分的內容還是跟之前說明的文章一樣，只是爬蟲的演算法有經過修正，從本來的日期迴圈換成文章迴圈，應會在效能上省去原先一些不必要的消耗。  
+之所以從本地端爬蟲PTT圖片，是因為PTT有限制不能夠用雲端連線(從第三方工具pyptt說明文件中讀到的，自己找robot.txt沒什麼結果選擇相信)，選擇一個日期區間並僅限標題內容包含"正妹"且同時標題內容不包含"Cosplay"(personal preference)的文章。  
 ***
-Python version 3.7 or newer
+作業系統: Windows 11  
+使用uv安裝和執行步驟:  
+1. 安裝uv: 開啟powershell輸入指令
+`powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`
 
-在專案目錄下建立 venv 虛擬環境
-```bash
-py -m venv venvName
-```
+    powershell -ExecutionPolicy ByPass: 允許腳本用 ByPass 執行策略忽略安全性限制執行。
 
-activate.bat 啟用虛擬環境  
-Windows
-```bash
-venvName\Scripts\activate
-```
-macOS or Linux
-```bash
-source venvName/bin/activate
-```
+    irm https://astral.sh/uv/install.ps1: irm 是 Invoke-RestMethod 的簡寫，從指定的 URL 下載腳本檔案的內容。https://astral.sh/uv/install.ps1 是 UV 官方提供的 Windows 安裝腳本。
 
-安裝套件
-```bash
-pip install -r requirements.txt
-```
+    | iex: | 是一個管道符號，將前一個指令（下載腳本）的結果傳遞給下一個指令。iex 是 Invoke-Expression 的簡寫，會執行接收到的腳本內容。
 
-在專案目錄下建立config.py，將其中```your_notion_token```以及```your_notion_database_id```替換為實際值
-```
-from datetime import datetime, timedelta
+    這段指令執行完會跳提示看要不要把uv加到環境變數中(optional)
+2. 重啟終端機後執行指令: `uv sync`
 
-# 常量
-PTT_BASE_URL = "https://www.ptt.cc"
-PTT_COOKIES = {'over18': '1'}
+    uv sync指令會讀取uv.lock檔案(which 依照pyproject.toml的定義管理間接依賴和構建虛擬環境等)
+3. 執行程式by 執行指令: `uv run notionPageCreate.py`
 
-# Notion 配置
-NOTION_SECRET = "your_notion_token"
-DATABASE_ID = "your_notion_database_id"
-
-# 設定最多爬取幾頁，避免無限循環
-MAX_PAGE = 100
-
-# 圖片相關配置
-NOTION_CHUNK_SIZE = 100  #Notion 分頁中圖片數量最多為100，也可設定較小數字
-IMAGE_BLACKLIST = [  #常見的推廣社群軟體
-    "instagram",  
-    "facebook",  
-    "tiktok", 
-    "https://x.com/",  
-    "twitter",
-    "youtube",
-    "https://youtu",
-    "threads"
-]
-
-# 設定爬取的日期區間 (YYYY, MM, DD)
-START_DATE = datetime(2025, 5, 22)
-END_DATE = datetime(2025, 5, 24)
-
-```
-最後再使用管理員權限執行批次檔
+    uv run會尋找路徑中的虛擬環境並使用虛擬環境執行程式；  
+    如果找不到接著會找pyproject.toml或是requirements.txt並建立一個虛擬環境安裝其中套件並在執行完畢後清掉虛擬環境；  
+    最後如果都沒有才會在系統環境執行程式
