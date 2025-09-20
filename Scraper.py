@@ -2,7 +2,7 @@
 import requests
 from bs4 import BeautifulSoup as BS
 import time
-from config import PTT_BASE_URL, PTT_COOKIES, IMAGE_BLACKLIST
+from shareConstant import PTT_BASE_URL, PTT_COOKIES, IMAGE_BLACKLIST
 from datetime import datetime, date
 import concurrent.futures
 from typing import Dict, List, Optional, Tuple

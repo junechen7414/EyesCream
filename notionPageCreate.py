@@ -1,4 +1,6 @@
 import logging
+import os
+from dotenv import load_dotenv
 import logging.config
 import concurrent.futures
 from notion_client import Client
@@ -8,10 +10,14 @@ from notion_client import Client
 # 這樣所有後續匯入的模組在呼叫 getLogger 時，都能獲得正確的設定
 logging.config.fileConfig('logging.ini', encoding='utf-8')
 
+# --- 讀取環境變數 ---
+load_dotenv()  # 從 .env 檔案載入環境變數
+
+NOTION_SECRET = os.getenv("NOTION_SECRET")
+DATABASE_ID = os.getenv("DATABASE_ID")
+
 # --- 現在才匯入其他模組 ---
-from config import (
-    NOTION_SECRET,
-    DATABASE_ID,
+from shareConstant import (
     NOTION_CHUNK_SIZE,
     START_DATE,
     END_DATE,

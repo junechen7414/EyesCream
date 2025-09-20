@@ -1,4 +1,4 @@
-config.py
 *.pyc
 .github
+.env
 __pycache__/
