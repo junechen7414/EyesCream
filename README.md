@@ -21,7 +21,8 @@
 3. 在路徑建立.env資料夾並加入notion資料庫資訊:
     NOTION_SECRET= "Notion Integration Token (須注意只會生成一次，並且該Integration要先在Notion的Database中"連接"這個選項中先加入)"
     DATABASE_ID= "Notion Database ID(通常用瀏覽器開啟並取url中 "notion.so/" 後面的字串就是了)"
-4. 執行程式by 執行指令: `uv run notionPageCreate.py`
+4. 在shareConstant.py中設定最多爬取的分頁數(預設為100)以及開始和結束日期
+5. 執行程式by 執行指令: `uv run notionPageCreate.py`
 
     uv run會尋找路徑中的虛擬環境並使用虛擬環境執行程式；  
     如果找不到接著會找pyproject.toml或是requirements.txt並建立一個虛擬環境安裝其中套件並在執行完畢後清掉虛擬環境；  
