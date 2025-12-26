@@ -1,6 +1,4 @@
 # 說明 / Introduction
-以前的說明(已過時)[每日排程爬蟲PTT圖片上傳Notion圖庫](https://ithelp.ithome.com.tw/articles/10369755)  
-
 之所以從本地端爬蟲PTT圖片，是因為PTT有限制不能夠用雲端連線(從第三方工具pyptt說明文件中讀到的，自己找robot.txt沒什麼結果選擇相信)，選擇一個日期區間並僅限標題內容包含"正妹"且同時標題內容不包含"Cosplay"(personal preference)的文章把圖片蒐集起來上傳到個人的notion資料庫中。  
 ***
 作業系統: Windows 11  
