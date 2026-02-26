@@ -19,8 +19,8 @@ IMAGE_BLACKLIST = [
 ]
 
 # 設定最多爬取幾頁，避免無限循環
-MAX_PAGE = 100
+MAX_PAGE = 500
 
 # 設定爬取的日期區間 (YYYY, MM, DD)
-START_DATE = date(2025, 9, 12)
-END_DATE = date(2025, 9, 19)
+START_DATE = date(2025, 9, 20)
+END_DATE = date(2026, 1, 1)
