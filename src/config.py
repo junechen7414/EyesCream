@@ -8,8 +8,8 @@ load_dotenv()
 PTT_BASE_URL = "https://www.ptt.cc"
 PTT_COOKIES = {'over18': '1'}
 MAX_PAGE = 500
-START_DATE = date(2026, 1, 2)
-END_DATE = date(2026, 2, 1)
+START_DATE = date(2026, 1, 3)
+END_DATE = date(2026, 1, 31)
 
 # 圖片相關配置
 IMAGE_BLACKLIST = [
